@@ -1,33 +1,42 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import config from './config/config';
+import { ProfileModule } from './profile/profile.module';
+import { ProductModule } from './product/product.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
 
   imports: [
+
+    AuthModule,
     UserModule,
+    ProfileModule,
+    ProductModule,
+    CategoryModule,
     ConfigModule.forRoot(),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
+    TypeOrmModule.forRoot(
+      {
+
         type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
-        port: +configService.get('DATABASE_PORT'),
-        username: configService.get('DATABASE_USERNAME'),
-        password: configService.get('DATABASE_PASSWORD'),
-        database: configService.get('DATABASE_NAME'),
+        host: config.database.host,
+        port: +config.database.port,
+        username: config.database.username,
+        password: config.database.password,
+        database: config.database.name,
         entities: [`${__dirname}/**/*.entity.{ts,js}`],
         synchronize: true,
         logging: true,
+        
       }),
-      inject: [ConfigService],
-    }),
-    AuthModule
+
   ],
+
   controllers: [AppController],
   providers: [AppService],
   
