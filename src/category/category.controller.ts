@@ -4,7 +4,6 @@ import { CategoryService } from "./category.service";
 import { AuthGuard } from "src/guards/auth.guards";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 
-
 @Controller('category')
 @ApiTags('Category')
 export class CategoryController {
@@ -13,7 +12,7 @@ export class CategoryController {
 
     @Get()
     list() {
-        return this.categoryService.find()
+        return this.categoryService.find( { relations: ['products'] } )
     }
 
     @Get(':id')

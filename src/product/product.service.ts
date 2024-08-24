@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Product } from "src/entities/Product.entity";
-import { In, Repository } from "typeorm";
+import { And, Between, ILike, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { FindProductParams } from "./product.types";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -12,26 +12,70 @@ export class ProductService {
     
     constructor(
 
-        private categoryService: CategoryService,
-        @InjectRepository(Product)
-        private productRepo: Repository<Product>
+      private categoryService: CategoryService,
+      @InjectRepository(Product)
+      private productRepo: Repository<Product>
 
     ) {}
 
     async find( params? : FindProductParams ) {    //! Burdaki params ve where, select yazilisi eynidir  <==
 
-        let { where, select } = params || {};
-        return this.productRepo.find( { where, select, relations: ['categories'] } )
+      let { where, select, relations, filter, pagination } = params || {};
+
+      if(filter) {
+
+        if(!where) where = {};
+
+        if(filter.name) {
+          where.name = ILike(`%${filter.name}%`)
+        }
+
+        if (filter.price) {
+          const [min, max] = filter.price;
+          let price = [];
+          if (min > 0) {
+            price.push(MoreThanOrEqual(min));
+          }
+          if (max > 0) {
+            price.push(LessThanOrEqual(max));
+          }
+          
+          if (price.length) {
+            where.price = And(...price);
+          }
+        }
+
+        if(filter.categories) {
+          where.categories = filter.categories.map((categoryId) => {
+            return {
+              id: categoryId,
+            }
+          })
+        }
+
+      }
+
+      return this.productRepo.find( { where, 
+        select, 
+        relations, 
+        take: pagination?.limit, 
+        skip: pagination && pagination.limit * pagination.page,
+        order: {
+          updateAt: 'DESC',
+        }
+      } )
         
     }
 
-    async findOne( { where, select } : FindProductParams = {} ) {   //! Burdaki params ve where, select yazilisi eynidir  <==
-        return this.productRepo.findOne( { where, select, relations: ['categories'] } )
+    async findOne( { where, select, relations } : FindProductParams = {} ) {   //! Burdaki params ve where, select yazilisi eynidir  <==
+      return this.productRepo.findOne( { where, select, relations } )
     }
 
     async create( params: CreateProductDto ) {
+
+      const categories = await this.categoryService.findByIds(params.categories)
         
-      let product = this.productRepo.create(params);
+      let product = this.productRepo.create( { ...params, categories } );
       await product.save();
 
       return product;
@@ -39,6 +83,7 @@ export class ProductService {
     }
 
     async update(id: number, params: UpdateProductDto) {
+
       let product = await this.findOne({ where: { id } });
     
       for (let key in params) {
@@ -51,22 +96,22 @@ export class ProductService {
         }
       }
     
-      await product.save();
+    await product.save();
     
-      return product;
-    }
+    return product;
+  }
 
-    async delete(id: number) {
+  async delete(id: number) {
 
-        let result = await this.productRepo.delete({ id });
-        if (result.affected === 0) throw new NotFoundException();
+      let result = await this.productRepo.delete({ id });
+      if (result.affected === 0) throw new NotFoundException();
 
-        return {
+      return {
 
-          message: 'Product is deleted successfully',
+        message: 'Product is deleted successfully',
 
-        };
+      };
 
-    }
+  }
 
 }

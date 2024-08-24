@@ -3,7 +3,8 @@ import { FindOptionsWhere } from "typeorm";
 
 export interface FindCategoryParams {
 
-    where?: FindOptionsWhere<Category>,
-    select?: CategoryKey[],
+    where?: FindOptionsWhere<Category>;
+    select?: CategoryKey[];
+    relations?: string[];
 
 }

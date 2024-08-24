@@ -14,8 +14,8 @@ export class CategoryService {
     ) {}
 
     async find( params?: FindCategoryParams ) {
-        let { where, select } = params || {};
-        return this.categoryRepo.find( { where, select } );
+        let { where, select, relations } = params || {};
+        return this.categoryRepo.find( { where, select, relations } );
     }
 
     findByIds(ids: number[]) {
@@ -32,7 +32,7 @@ export class CategoryService {
         let category = this.categoryRepo.create(params)
         await category.save()
 
-        return category
+        return category;
 
     }
 
@@ -42,6 +42,6 @@ export class CategoryService {
         return {
           message: 'Category is deleted successfully',
         };
-      }
+    }
 
 }

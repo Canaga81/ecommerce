@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { ProductService } from "./product.service";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "src/guards/auth.guards";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { GetProductDto } from "./dto/get-product.dto";
 
 @Controller('product')
 @ApiTags('Product')
@@ -12,13 +13,18 @@ export class ProductController {
     constructor( private productService: ProductService ) {}
 
     @Get()
-    list() {
-        return this.productService.find()
+    list(@Query() query: GetProductDto) {
+        let price: [ number, number ] = [query.minPrice, query.maxPrice ]
+        return this.productService.find( { 
+            relations: ['categories'], 
+            pagination: { limit: query.limit, page: query.page } , 
+            filter: {...query, price } 
+        } )
     }
 
     @Get(':id')
     item(@Param('id') id: number) {
-        return this.productService.findOne( { where: { id } } );
+        return this.productService.findOne( { where: { id }, relations: ['categories'], } );
     }
 
     @Post()
