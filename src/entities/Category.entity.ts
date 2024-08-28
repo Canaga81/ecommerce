@@ -4,7 +4,6 @@ import { Product } from "./Product.entity";
 
 export type CategoryKey = keyof Category 
 
-
 @Entity()
 export class Category extends CommonEntity {
 
@@ -12,7 +11,9 @@ export class Category extends CommonEntity {
     name: string;
 
     @ManyToMany(() => Product, (product) => product.categories)
-    @JoinTable()
+    @JoinTable({
+        name: 'category_product',
+    })
     products: Product[];
 
 }

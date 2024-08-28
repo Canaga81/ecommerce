@@ -9,6 +9,8 @@ import config from './config/config';
 import { ProfileModule } from './profile/profile.module';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
+import { OrderModule } from './order/order.module';
+
 
 @Module({
 
@@ -19,6 +21,7 @@ import { CategoryModule } from './category/category.module';
     ProfileModule,
     ProductModule,
     CategoryModule,
+    OrderModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(
       {
@@ -30,7 +33,9 @@ import { CategoryModule } from './category/category.module';
         password: config.database.password,
         database: config.database.name,
         entities: [`${__dirname}/**/*.entity.{ts,js}`],
-        synchronize: true,
+        migrations: [`${__dirname}/**/migrations/*.js`],
+        migrationsRun: true,
+        synchronize: process.env.NODE_ENV === 'development' ? true : false,
         logging: true,
         
       }),

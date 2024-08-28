@@ -3,6 +3,8 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { CategoryService } from "./category.service";
 import { AuthGuard } from "src/guards/auth.guards";
 import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UserRoles } from "src/common/enum/user-roles.enum";
+import { Roles } from "src/common/decoraters/roles.decorater";
 
 @Controller('category')
 @ApiTags('Category')
@@ -12,7 +14,7 @@ export class CategoryController {
 
     @Get()
     list() {
-        return this.categoryService.find( { relations: ['products'] } )
+        return this.categoryService.find()
     }
 
     @Get(':id')
@@ -23,6 +25,7 @@ export class CategoryController {
     @Post()
     @UseGuards(AuthGuard)
     @ApiBearerAuth()
+    @Roles(UserRoles.ADMIN)
     create( @Body() body: CreateCategoryDto ) {
         return this.categoryService.create(body)
     }
@@ -30,6 +33,7 @@ export class CategoryController {
     @Delete(':id')
     @UseGuards(AuthGuard)
     @ApiBearerAuth()
+    @Roles(UserRoles.ADMIN, UserRoles.CONTENT_MANAGER)
     delete(@Param('id') id: number) {
         return this.categoryService.delete(id);
     }

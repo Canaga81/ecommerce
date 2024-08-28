@@ -1,6 +1,8 @@
-import { BeforeInsert, Column, Entity } from "typeorm";
+import { BeforeInsert, Column, Entity, OneToMany } from "typeorm";
 import { CommonEntity } from "./Common.entity";
 import * as bcrypt from 'bcrypt';
+import { Order } from "./Order.entity";
+import { UserRoles } from "src/common/enum/user-roles.enum";
 
 export type UserKey = keyof User
 
@@ -18,6 +20,17 @@ export class User extends CommonEntity {
 
     @Column()
     lastName: string;
+
+    @Column( { 
+        type: 'enum',
+        enum: UserRoles,
+        array: true,
+        nullable: true,
+     } )
+    roles: UserRoles[];
+
+    @OneToMany(() => Order, (order) => order.user, {onDelete: 'CASCADE'})
+    orders: Order[]
 
     @BeforeInsert()
     async beforeInsert() {
