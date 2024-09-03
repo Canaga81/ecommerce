@@ -5,6 +5,7 @@ import { ImageEntity } from "./Image.entity";
 
 export type ProductKey = keyof Product
 
+
 @Entity()
 export class Product extends CommonEntity {
 

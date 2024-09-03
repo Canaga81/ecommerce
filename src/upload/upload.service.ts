@@ -1,10 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Request } from "express";
-import { rmSync } from "fs";
-import { join } from "path";
 import { ImageEntity } from "src/entities/Image.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 
 @Injectable()
 export class UploadService {
@@ -18,6 +16,7 @@ export class UploadService {
         req: Request,
         file: Express.Multer.File
     ) {
+
         let port = req.socket.localPort
         let image = this.imageRepo.create({
             fileName: file.filename,
@@ -29,10 +28,18 @@ export class UploadService {
     }
 
     async deleteImage(id: number) {
+
         let image = await this.imageRepo.findOne( { where: { id } } );
         if(!image) throw new NotFoundException()
             
-        return await image.remove()
+        return await image.remove();
+
+    }
+
+    async deleteImages(images: ImageEntity[]) {
+
+        return await this.imageRepo.remove(images)
+
     }
 
 }

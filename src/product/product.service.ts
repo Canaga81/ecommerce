@@ -6,12 +6,15 @@ import { FindProductParams } from "./product.types";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { CategoryService } from "src/category/category.service";
+import { UploadService } from "src/upload/upload.service";
+import { ImageEntity } from "src/entities/Image.entity";
 
 @Injectable()
 export class ProductService {
     
     constructor(
 
+      private uploadService: UploadService,
       private categoryService: CategoryService,
       @InjectRepository(Product)
       private productRepo: Repository<Product>
@@ -109,8 +112,12 @@ export class ProductService {
 
   async delete(id: number) {
 
-      let result = await this.productRepo.delete({ id });
-      if (result.affected === 0) throw new NotFoundException();
+      let product = await this.productRepo.findOne( { where: { id } } );
+      if(!product) throw new NotFoundException();
+
+      await this.uploadService.deleteImages(product.images as ImageEntity[])
+
+      await this.productRepo.delete({ id });
 
       return {
 
